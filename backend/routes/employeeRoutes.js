@@ -6,7 +6,7 @@ const path = require("path");
 
 const router = express.Router();
 
-// --- Multer config for file upload ---
+//fileupload
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "uploads/"); // folder
@@ -19,7 +19,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// POST /employees   (with optional profileImage)
+// POST /employees
 router.post("/", auth, upload.single("profileImage"), async (req, res) => {
   try {
     const { firstName, lastName, email, department, position, salary } = req.body;
@@ -62,7 +62,7 @@ router.get("/:id", auth, async (req, res) => {
   }
 });
 
-// PUT /employees/:id (update + optional new picture)
+// PUT /employees/:id 
 router.put("/:id", auth, upload.single("profileImage"), async (req, res) => {
   try {
     const updateData = { ...req.body };
