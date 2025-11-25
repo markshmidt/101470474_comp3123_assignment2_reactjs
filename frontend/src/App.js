@@ -5,7 +5,7 @@ import SignupPage from "./pages/SignUp";
 import EmployeeList from "./pages/EmployeeList";
 import EmployeeDetail from "./pages/EmployeeDetail";
 import EmployeeForm from "./pages/EmployeeForm";
-
+import NavBar from "./components/NavBar";
 const isLoggedIn = () => !!localStorage.getItem("token");
 
 const App = () => {
@@ -15,21 +15,8 @@ const App = () => {
   };
 
   return (
-    <div>
-      <nav style={{ padding: "10px", borderBottom: "1px solid #ccc" }}>
-        {isLoggedIn() ? (
-          <>
-            <Link to="/employees">Employees</Link>{" "}
-            <button onClick={handleLogout}>Logout</button>
-          </>
-        ) : (
-          <>
-            <Link to="/login">Login</Link>{" "}
-            <Link to="/signup">Signup</Link>
-          </>
-        )}
-      </nav>
-
+   <>
+      <NavBar/>
       <Routes>
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<LoginPage />} />
@@ -51,7 +38,7 @@ const App = () => {
           element={isLoggedIn() ? <EmployeeForm /> : <Navigate to="/login" />}
         />
       </Routes>
-    </div>
+    </>
   );
 };
 

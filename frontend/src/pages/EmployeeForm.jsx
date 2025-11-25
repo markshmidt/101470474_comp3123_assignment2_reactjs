@@ -1,142 +1,90 @@
 import React, { useEffect, useState } from "react";
+import {
+  Typography,
+  Paper,
+  TextField,
+  Button,
+  Stack
+} from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import axiosClient from "../api/axiosClient";
+import Layout from "../components/Layout";
 
-const EmployeeFormPage = () => {
+export default function EmployeeFormPage() {
   const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    department: "",
-    position: "",
-    salary: "",
+    firstName:"",lastName:"",email:"",department:"",position:"",salary:""
   });
   const [file, setFile] = useState(null);
-  const [error, setError] = useState("");
-
-  const { id } = useParams(); // if exists -> edit
-  const navigate = useNavigate();
-
+  
+  const {id} = useParams();
   const isEdit = !!id;
-
-  useEffect(() => {
-    const fetchEmployee = async () => {
-      if (!isEdit) return;
-      try {
-        const res = await axiosClient.get(`/employees/${id}`);
-        setForm({
-          firstName: res.data.firstName,
-          lastName: res.data.lastName,
-          email: res.data.email,
-          department: res.data.department,
-          position: res.data.position,
-          salary: res.data.salary,
-        });
-      } catch (err) {
-        setError("Failed to load employee");
-      }
-    };
-    fetchEmployee();
-  }, [id, isEdit]);
-
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-
-    try {
-      const formData = new FormData();
-      Object.entries(form).forEach(([key, value]) => {
-        formData.append(key, value);
+  const navigate = useNavigate();
+  
+  useEffect(()=>{
+    if(isEdit){
+      axiosClient.get(`/employees/${id}`).then(res=>{
+        setForm(res.data);
       });
-      if (file) {
-        formData.append("profileImage", file);
-      }
-
-      if (isEdit) {
-        await axiosClient.put(`/employees/${id}`, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-      } else {
-        await axiosClient.post("/employees", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-      }
-
-      navigate("/employees");
-    } catch (err) {
-      setError("Save failed");
     }
+  },[id,isEdit]);
+
+  const changeField = e =>
+    setForm({...form, [e.target.name]: e.target.value});
+
+  const submit = async(e)=>{
+    e.preventDefault();
+    const fd = new FormData();
+    Object.entries(form).forEach(([k,v])=>fd.append(k,v));
+    if(file) fd.append("profileImage",file);
+
+    if(isEdit) await axiosClient.put(`/employees/${id}`,fd);
+    else await axiosClient.post("/employees",fd);
+
+    navigate("/employees");
   };
 
   return (
-    <div className="container">
-      <h2>{isEdit ? "Edit Employee" : "Add Employee"}</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+    <Layout>
+      <Paper sx={{p:4}}>
+        <Typography variant="h4" fontWeight="bold" mb={3}>
+          {isEdit ? "Update Employee" : "Add Employee"}
+        </Typography>
 
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>First Name</label>
-          <input
-            name="firstName"
-            value={form.firstName}
-            onChange={handleChange}
-          />
-        </div>
+        <form onSubmit={submit}>
+          <Stack spacing={2}>
+            <TextField label="First Name" name="firstName"
+              value={form.firstName} onChange={changeField} />
 
-        <div>
-          <label>Last Name</label>
-          <input name="lastName" value={form.lastName} onChange={handleChange} />
-        </div>
+            <TextField label="Last Name" name="lastName"
+              value={form.lastName} onChange={changeField} />
 
-        <div>
-          <label>Email</label>
-          <input name="email" value={form.email} onChange={handleChange} />
-        </div>
+            <TextField label="Email" name="email"
+              value={form.email} onChange={changeField} />
 
-        <div>
-          <label>Department</label>
-          <input
-            name="department"
-            value={form.department}
-            onChange={handleChange}
-          />
-        </div>
+            <TextField label="Department" name="department"
+              value={form.department} onChange={changeField} />
 
-        <div>
-          <label>Position</label>
-          <input
-            name="position"
-            value={form.position}
-            onChange={handleChange}
-          />
-        </div>
+            <TextField label="Position" name="position"
+              value={form.position} onChange={changeField} />
 
-        <div>
-          <label>Salary</label>
-          <input
-            name="salary"
-            type="number"
-            value={form.salary}
-            onChange={handleChange}
-          />
-        </div>
+            <TextField label="Salary" name="salary"
+              value={form.salary} onChange={changeField} />
 
-        <div>
-          <label>Profile picture</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setFile(e.target.files[0])}
-          />
-        </div>
+            <Button variant="outlined" component="label">
+              Upload Image
+              <input type="file" hidden onChange={e=>setFile(e.target.files[0])}/>
+            </Button>
 
-        <button type="submit">{isEdit ? "Update" : "Create"}</button>
-      </form>
-    </div>
+            <Stack direction="row" spacing={2}>
+              <Button type="submit" variant="contained">Save</Button>
+              <Button variant="outlined" color="error" onClick={()=>navigate("/employees")}>
+                Cancel
+              </Button>
+            </Stack>
+
+          </Stack>
+        </form>
+      </Paper>
+    </Layout>
   );
-};
-
-export default EmployeeFormPage;
+}

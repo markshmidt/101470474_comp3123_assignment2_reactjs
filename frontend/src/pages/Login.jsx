@@ -1,52 +1,53 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { TextField, Button, Typography, Paper, Box } from "@mui/material";
 import axiosClient from "../api/axiosClient";
+import { Link, useNavigate } from "react-router-dom";
+import Layout from "../components/Layout";
 
-const LoginPage = () => {
-  const [form, setForm] = useState({ email: "", password: "" });
+export default function LoginPage() {
+  const [form, setForm] = useState({ email:"", password:"" });
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const changeField = e => setForm({...form, [e.target.name]:e.target.value});
 
-  const handleSubmit = async (e) => {
+  const submit = async(e)=>{
     e.preventDefault();
-    setError("");
-
     try {
       const res = await axiosClient.post("/auth/login", form);
       localStorage.setItem("token", res.data.token);
-      window.location.href = "/employees";
-    } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
+      navigate("/employees");
+    } catch(err){
+      setError("Invalid login credentials");
     }
   };
 
   return (
-    <div className="container">
-      <h2>Login</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+    <Layout>
+      <Paper sx={{ p:4 }}>
+        <Typography variant="h4" fontWeight="bold" mb={2}>Login</Typography>
 
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Email</label>
-          <input name="email" value={form.email} onChange={handleChange} />
-        </div>
+        <form onSubmit={submit}>
+          <TextField fullWidth margin="normal" label="Email" name="email"
+            value={form.email} onChange={changeField} />
 
-        <div>
-          <label>Password</label>
-          <input
-            name="password"
-            type="password"
-            value={form.password}
-            onChange={handleChange}
+          <TextField fullWidth margin="normal" type="password" label="Password"
+            name="password" value={form.password} onChange={changeField}
           />
-        </div>
 
-        <button type="submit">Login</button>
-      </form>
-    </div>
-  );
-};
+          {error && <Typography color="error">{error}</Typography>}
 
-export default LoginPage;
+          <Button fullWidth variant="contained" sx={{mt:2}} type="submit">
+            Login
+          </Button>
+        </form>
+
+        <Box mt={2}>
+          <Typography>
+            Don’t have account? <Link to="/signup">Signup</Link>
+          </Typography>
+        </Box>
+      </Paper>
+    </Layout>
+  )
+}
